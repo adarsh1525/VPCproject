@@ -1,32 +1,51 @@
-- hosts: localhost
+hosts: localhost
   connection: local
   tasks:
   - name: Import VPC varibles
     include_vars: variable
-  
+
   - name: create vprofile VPC
-     amazon.aws.ec2_vpc_net:
-      name: "${{vpc_name}}"
-      cidr_block: "${vpcCidr}"
-      region: "${{region}}"
+    ec2_vpc_net:
+      name: "{{vpc_name}}"
+      cidr_block: "{{vpcCidr}}"
+      region: "{{region}}"
       dns_hostnames: true
       dns_support: true
     register: vpcout
-    - debug:
+
+  - debug:
      var: vpcout
 
-  - name: create subnets
-     amazon.aws.ec2_vpc_subnets:
-      name: "{{ item.name }}"
+  - name: create subnet1
+    ec2_vpc_subnet:
+      cidr: "{{PubSub1Cdir}}"
       state: present
-      vpc_id: "{{ vpcout.vpc.id }}"
+      vpc_id: "{{vpcout.vpc.id}}"
       map_public: true
-      region: "{{ region }}"
-      az: "{{ item.zone }}"
-      with_items:
-       - { name: PubSub1Cdir, zone: zone1}
-       - { name: PubSub2Cdir, zone: zone2}
-       - { name: PubSub3Cdir, zone: zone3}
-      resource_tags: 
-       name: vprofile_privsub
-    register: privsub3_out
+      region: "{{region}}"
+      az: "{{zone1}}"
+      resource_tags:
+       name: vprofile_privsub1
+    register: privsub_out1
+  - name: create subnet2
+    ec2_vpc_subnet:
+      cidr: "{{PubSub2Cdir}}"
+      state: present
+      vpc_id: "{{vpcout.vpc.id}}"
+      map_public: true
+      region: "{{region}}"
+      az: "{{zone2}}"
+      resource_tags:
+       name: vprofile_privsub2
+    register: privsub_out2
+  - name: create subnet3
+    ec2_vpc_subnet:
+      cidr: "{{PubSub3Cdir}}"
+      state: present
+      vpc_id: "{{vpcout.vpc.id}}"
+      map_public: true
+      region: "{{region}}"
+      az: "{{zone3}}"
+      resource_tags:
+       name: vprofile_privsub3
+    register: privsub_out3
