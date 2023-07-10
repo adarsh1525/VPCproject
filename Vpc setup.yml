@@ -1,0 +1,21 @@
+vpc_name: "Vprofile-vpc"
+
+#VPC Range
+vpcCidr: '172.20.0.0/16'
+
+#subnets Range
+PubSub1Cdir: 172.20.1.0/24
+PubSub2Cdir: 172.20.2.0/24
+PubSub3Cdir: 172.20.3.0/24
+PubSub4Cdir: 172.20.4.0/24
+PubSub5Cdir: 172.20.5.0/24
+PubSub6Cdir: 172.20.6.0/24
+
+#Region Name
+region: "ap-south-1"
+
+#Zone names
+zone1: "ap-south-1a"
+zone2: "ap-south-1b"
+zone3: "ap-south-1c"
+
