@@ -14,7 +14,7 @@ PubSub6Cdir: 172.20.6.0/24
 #Region Name
 region: "ap-south-1"
 
-#Zone names
+#Zone name
 zone1: "ap-south-1a"
 zone2: "ap-south-1b"
 zone3: "ap-south-1c"
