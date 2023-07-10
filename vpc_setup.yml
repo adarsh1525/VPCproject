@@ -2,7 +2,7 @@
   connection: local
   tasks:
   - name: Import VPC varibles
-    include_vars: vars/vpc_setup
+    include_vars: variable
   
   -name: create vprofile VPC
    amazon.aws.ec2_vpc_net:
