@@ -3,7 +3,7 @@ vpc_name: "Vprofile-vpc"
 #VPC Range
 vpcCidr: '172.20.0.0/16'
 
-#subnets Range
+#subnets Ranges
 PubSub1Cdir: 172.20.1.0/24
 PubSub2Cdir: 172.20.2.0/24
 PubSub3Cdir: 172.20.3.0/24
