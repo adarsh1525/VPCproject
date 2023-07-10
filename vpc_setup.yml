@@ -2,13 +2,31 @@
   connection: local
   tasks:
   - name: Import VPC varibles
-    include_vars: variable
+    include_vars: vars/vpc_setup
   
   - name: create vprofile VPC
-    amazon.aws.ec2_vpc_net:
-     name: "{{vpc_name}}"
-     cidr_block: "{vpcCidr}"
-     region: "{{region}}"
-     dns_hostnames: true
-     dns_support: true
+     amazon.aws.ec2_vpc_net:
+      name: "${{vpc_name}}"
+      cidr_block: "${vpcCidr}"
+      region: "${{region}}"
+      dns_hostnames: true
+      dns_support: true
     register: vpcout
+    - debug:
+     var: vpcout
+
+  - name: create subnets
+     amazon.aws.ec2_vpc_subnets:
+      name: "{{ item.name }}"
+      state: present
+      vpc_id: "{{ vpcout.vpc.id }}"
+      map_public: true
+      region: "{{ region }}"
+      az: "{{ item.zone }}"
+      with_items:
+       - { name: PubSub1Cdir, zone: zone1}
+       - { name: PubSub2Cdir, zone: zone2}
+       - { name: PubSub3Cdir, zone: zone3}
+      resource_tag: 
+       name: vprofile_privsub3
+    register: privsub3_out
