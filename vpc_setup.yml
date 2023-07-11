@@ -49,6 +49,7 @@
       resource_tags:
        Name: vprofile_privsub3
     register: privsub_out3
+
   - name: create gateway setup
     ec2_vpc_igw:
      vpc_id: "{{vpcout.vpc.id}}"
@@ -57,32 +58,56 @@
      resource_tags:
       Name: vprofile_IGW
     register: igw_out
+  - debug:
+    var: igw_out
 
   - name: create route table
-    ec2_vpc_route_table:
+    amazon.aws.ec2_vpc_route_table:
      region: "{{region}}"
      vpc_id: "{{vpcout.vpc.id}}"
      state: present
      resource_tags:
       Name: public
      routes:
-      - dest: 0.0.0.0/0
+      - dest: 0.0.0.0./0
         gateway_id: "{{igw_out.gateway_id}}"
      subnets:
       - "{{privsub_out1.subnet.id}}"
       - "{{privsub_out2.subnet.id}}"
       - "{{privsub_out3.subnet.id}}"
     register: vprofile_rt
-    
-  - name: create ec2 instance
-    ec2_instance:
-     name: sample
-     count: 2
-     cpu_options:
-      core_count: 1
-      threads_per_core: 1
-     image_id: "{{ ami-0d13e3e640877b0b }}"
-     instance_type: "{{ t2.micro }}"
-     region: "{{ ap-south-1 }}"
-     state: "{ running }"
+  - debug:
+     var: vprofile_rt
+
+  - name: create a nat gateway
+    ec2_vpc_nat_gateway:
+     resource_tags:
+      Name: vprofile_gateway
+     state: present
+     subnet_id: "{{privsub_out1.subnet.id}}"
+     if_exist_do_not_creat: true
+     wait: true
+     region: "{{region}}"
+    register: NATGW_out
+
+  - debug:
+     var: NATGW_out
+
+  - name: creat internet gate way to NAT gate
+    ec2_vpc_igw:
+     region: "{{region}}"
+     vpc_id: "{{vpcout.vpc.id}}"
+     state: present
+     resource_tags:
+      Name: vprofile_public
+     routes:
+      - dest: 0.0.0.0./0
+        gateway_id: "{{ NATGW_out.nat_gateway_id }}"
+     subnets:
+      - "{{privsub_out1.subnet.id}}"
+      - "{{privsub_out2.subnet.id}}"
+      - "{{privsub_out3.subnet.id}}"
+    register: privRT_out
+  - debug:
+     var: privRT_out
   
