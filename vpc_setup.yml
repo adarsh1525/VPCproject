@@ -73,4 +73,16 @@
       - "{{privsub_out2.subnet.id}}"
       - "{{privsub_out3.subnet.id}}"
     register: vprofile_rt
+    
+  - name: create ec2 instance
+    ec2_instance:
+     name: sample
+     count: 2
+     cpu_options:
+      core_count: 1
+      threads_per_core: 1
+     image_id: "{{ ami-0d13e3e640877b0b }}"
+     instance_type: "{{ t2.micro }}"
+     region: "{{ ap-south-1 }}"
+     state: "{ running }"
   
