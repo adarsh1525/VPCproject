@@ -1,4 +1,4 @@
-hosts: localhost
+- hosts: localhost
   connection: local
   tasks:
   - name: Import VPC varibles
@@ -25,7 +25,7 @@ hosts: localhost
       region: "{{region}}"
       az: "{{zone1}}"
       resource_tags:
-       name: vprofile_privsub1
+       Name: vprofile_privsub1
     register: privsub_out1
   - name: create subnet2
     ec2_vpc_subnet:
@@ -36,9 +36,9 @@ hosts: localhost
       region: "{{region}}"
       az: "{{zone2}}"
       resource_tags:
-       name: vprofile_privsub2
+       Name: vprofile_privsub2
     register: privsub_out2
-  - name: create subnet3
+  - name: create subnet1
     ec2_vpc_subnet:
       cidr: "{{PubSub3Cdir}}"
       state: present
@@ -47,5 +47,30 @@ hosts: localhost
       region: "{{region}}"
       az: "{{zone3}}"
       resource_tags:
-       name: vprofile_privsub3
+       Name: vprofile_privsub3
     register: privsub_out3
+  - name: create gateway setup
+    ec2_vpc_igw:
+     vpc_id: "{{vpcout.vpc.id}}"
+     state: present
+     region: "{{region}}"
+     resource_tags:
+      Name: vprofile_IGW
+    register: igw_out
+
+  - name: create route table
+    amazon.aws.ec2_vpc_route_table:
+     region: "{{region}}"
+     vpc_id: "{{vpcout.vpc.id}}"
+     state: present
+     resource_tags:
+      Name: public
+     routes:
+      - dest: 0.0.0.0./0
+        gateway_id: "{{igw_out.gateway_id}}"
+     subnets:
+      - "{{privsub_out1.subnet.id}}"
+      - "{{privsub_out2.subnet.id}}"
+      - "{{privsub_out3.subnet.id}}"
+    register: vprofile_rt
+  
