@@ -59,14 +59,14 @@
     register: igw_out
 
   - name: create route table
-    amazon.aws.ec2_vpc_route_table:
+    ec2_vpc_route_table:
      region: "{{region}}"
      vpc_id: "{{vpcout.vpc.id}}"
      state: present
      resource_tags:
       Name: public
      routes:
-      - dest: 0.0.0.0./0
+      - dest: 0.0.0.0/0
         gateway_id: "{{igw_out.gateway_id}}"
      subnets:
       - "{{privsub_out1.subnet.id}}"
