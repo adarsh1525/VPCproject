@@ -16,39 +16,78 @@
   - debug:
      var: vpcout
 
-  - name: create subnet1
+  - name: create prvt subnet1
     ec2_vpc_subnet:
       cidr: "{{PubSub1Cdir}}"
       state: present
       vpc_id: "{{vpcout.vpc.id}}"
-      map_public: true
+      map_public: false
       region: "{{region}}"
       az: "{{zone1}}"
       resource_tags:
        Name: vprofile_privsub1
     register: privsub_out1
-  - name: create subnet2
+
+  - name: create pvrt subnet2
     ec2_vpc_subnet:
       cidr: "{{PubSub2Cdir}}"
       state: present
       vpc_id: "{{vpcout.vpc.id}}"
-      map_public: true
+      map_public: false
       region: "{{region}}"
       az: "{{zone2}}"
       resource_tags:
        Name: vprofile_privsub2
     register: privsub_out2
-  - name: create subnet1
+
+  - name: create prvt subnet3
     ec2_vpc_subnet:
       cidr: "{{PubSub3Cdir}}"
       state: present
       vpc_id: "{{vpcout.vpc.id}}"
-      map_public: true
+      map_public: false
       region: "{{region}}"
       az: "{{zone3}}"
       resource_tags:
        Name: vprofile_privsub3
     register: privsub_out3
+
+  - name: create pub subne1
+    ec2_vpc_subnet:
+     cidr: "{{PubSub4Cdir}}"
+     state: present
+     vpc_id: "{{vpcout.vpc.id}}"
+     region: "{{region}}"
+     map_public: true
+     az: "{{zone1}}"
+     resource_tags:
+      Name: vprofile_pubsub1
+    register: pubsub_out1
+  
+  - name: create pub subne2
+    ec2_vpc_subnet:
+     cidr: "{{PubSub5Cdir}}"
+     state: present
+     vpc_id: "{{vpcout.vpc.id}}"
+     region: "{{region}}"
+     map_public: true
+     az: "{{zone2}}"
+     resource_tags:
+      Name: vprofile_pubsub2
+    register: pubsub_out2
+
+  - name: create pub subne3
+    ec2_vpc_subnet:
+     cidr: "{{PubSub6Cdir}}"
+     state: present
+     vpc_id: "{{vpcout.vpc.id}}"
+     region: "{{region}}"
+     map_public: true
+     az: "{{zone3}}"
+     resource_tags:
+      Name: vprofile_pubsub3
+    register: pubsub_out3
+
 
   - name: create gateway setup
     ec2_vpc_igw:
@@ -84,7 +123,7 @@
      resource_tags:
       Name: vprofile_gateway
      state: present
-     subnet_id: "{{privsub_out1.subnet.id}}"
+     subnet_id: "{{pubsub_out1.subnet.id}}"
      if_exist_do_not_creat: true
      wait: true
      region: "{{region}}"
