@@ -149,7 +149,7 @@
      var: privRT_out
   
   - debug:
-      var: {{item}}
+      var: "{{item}}"
     loop:
      - vpcout.vpc.id
      - pubsub_out1.subnet.id
@@ -180,4 +180,4 @@
   - name: create varible file after vpc igw_out
     copy:
      content: "vpc_id: {{vpcout.vpc.id}}\npubsub1id: {{pubsub_out1.subnet.id}}\npubsub2id: {{pubsub_out2.subnet.id}}\npubsub3id: {{pubsub_out3.subnet.id}}\nprivsub1id: {{privsub_out1.subnet.id}}\nprivsub2id: {{privsub_out2.subnet.id}}\nprivsub3id: {{privsub_out3.subnet.id}}\nigwid: {{igw_out.gateway_id}}\npubRTid: {{pub_rt.route_table.id}}\nNATGWid: {{NATGW_out.nat_gateway_id}}\nprivRTid: {{privRT_out.route_table.id}}"
-     dest: "/variables/out"
+     dest: "/VPCproject/variable"
