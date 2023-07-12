@@ -18,3 +18,6 @@ region: "ap-south-1"
 zone1: "ap-south-1a"
 zone2: "ap-south-1b"
 zone3: "ap-south-1c"
+
+bastion_ami: ami-09d5aaa0b11e7e75d
+MYIP: 172.31.37.142/32
