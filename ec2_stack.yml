@@ -4,11 +4,11 @@
 
   tasks:
    - name: export variable1
-     include_vars: /VPCproject/stack-variable
+     include_vars: /VPCproject/stack_variables
    - name: export variable2
      include_vars: /VPCproject/vpc_project_variables
    - name: export VPC out varibles
-     include_vars: /VPCproject/vpc_out_varibles
+     include_vars: /VPCproject/vpc_out_variables
 
    - name: create key pair
      ec2_key:
@@ -57,8 +57,7 @@
          from_port: 80
          to_port: 80
          group_name: ELB
-
-     resgister: ec2sg_out
+     register: ec2sg_out
    
    - name: update security group with its own sg id
      ec2_group:
@@ -69,17 +68,17 @@
       purge_rules: no
       rules:
        - proto: all
-       - group_id: "{{ec2sg_out.group_id}}"
+         group_id: "{{ec2sg_out.group_id}}"
 
    - name: creating nginx webserver
      ec2:
       key_name: sample-key2
       region: "{{ region }}"
       state: present
-      image_id: "{{ nginx_ami }}"
+      image: "{{ nginx_ami }}"
       instance_type: t4g.small
-      name: nginx
-      security_groug: ec2 instances SG
+      #name: nginx
+      group_id: "{{ ec2sg_out.group_id }}"
       vpc_subnet_id: "{{ privsub1id }}"
       instance_tags:
        Name: "web01"
@@ -94,13 +93,13 @@
 
    - name: creating tomcat appserver
      ec2:
-      name: tomacat
+      #name: tomacat
       key_name: sample-key2
       region: "{{ region }}"
       state: present
-      image_id: "{{ tomcat_ami }}"
+      image: "{{ tomcat_ami }}"
       instance_type: t4g.small
-      security_groug: ec2 instances SG
+      group_id: "{{ ec2sg_out.group_id }}"
       vpc_subnet_id: "{{ privsub1id }}"
       instance_tags:
        Name: "app01"
@@ -115,13 +114,13 @@
 
    - name: creating memcache mc01
      ec2:
-      name: memcache
+      #name: memcache
       key_name: sample-key2
       region: "{{ region }}"
       state: present
-      image_id: "{{ memcached_ami }}"
+      image: "{{ memcached_ami }}"
       instance_type: t4g.small
-      security_groug: ec2 instances SG
+      group_id: "{{ ec2sg_out.group_id }}"
       vpc_subnet_id: "{{ privsub1id }}"
       instance_tags:
        Name: "mc01"
@@ -136,13 +135,13 @@
 
    - name: creating rabbitmq rm01
      ec2:
-      name: rabbitmq
+      #name: rabbitmq
       key_name: sample-key2
       region: "{{ region }}"
       state: present
-      image_id: "{{ rabbitmq_ami }}"
+      image: "{{ rabbitmq_ami }}"
       instance_type: t4g.small
-      security_groug: ec2 instances SG
+      group_id: "{{ ec2sg_out.group_id }}"
       vpc_subnet_id: "{{ privsub1id }}"
       instance_tags:
        Name: "rm01"
@@ -157,13 +156,13 @@
 
    - name: creating mysql server db01
      ec2:
-      name: mysql
+      #name: mysql
       key_name: sample-key2
       region: "{{ region }}"
-      state: present
-      image_id: "{{ mysql_ami }}"
+      #state: present
+      image: "{{ mysql_ami }}"
       instance_type: t4g.small
-      security_groug: ec2 instances SG
+      group_id: "{{ ec2sg_out.group_id }}"
       vpc_subnet_id: "{{ privsub1id }}"
       instance_tags:
        Name: "db01"
@@ -175,3 +174,21 @@
        project: vprofile
        owner: devops team
      register: mysql_out
+
+   - name: creating ELB
+     ec2_elb_lb:
+      name: elb nginx
+      region: "{{ region }}"
+      state: present
+      instance_ids:
+       - "{{ nginx_out.tagged_intsances[0].id }}"
+      purge_intsances_ids: true
+      security_group_ids: "{{ elbsg_out.group_id }}"
+      subnets:
+       - "{{ pubsub1id }}"
+       - "{{ pubsub2id }}"
+       - "{{ pubsub3id }}"
+      listeners:
+      - protocol: http
+        load_balancer_port: 80
+        instance_port: 80
