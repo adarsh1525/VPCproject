@@ -90,6 +90,8 @@
        project: vprofile
        owner: devops team
      register: nginx_out
+   - debug:
+      var: nginx_out
 
    - name: creating tomcat appserver
      ec2:
@@ -117,7 +119,7 @@
       #name: memcache
       key_name: sample-key2
       region: "{{ region }}"
-      #state: present
+      #tate: present
       image: "{{ memcached_ami }}"
       instance_type: t4g.small
       group_id: "{{ ec2sg_out.group_id }}"
