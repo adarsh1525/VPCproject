@@ -1,0 +1,70 @@
+- name: setup vprofile stack
+  hosts: localhost
+  connection: local
+
+  tasks:
+   - name: export variable1
+     include_var: /VPCproject/stack-variable
+   - name: export variable2
+     include_var: /VPCproject/Vpc_project_variables
+   - name: export VPC out varibles
+     include_vars: /VPCproject/vpc_out_varibles
+
+   - name: create key pair
+     ec2_key:
+      name: sample-key2
+      region: "{{ Vpc_project_variables }}"
+      state: present
+     resgister: key_out
+
+   - name: store key in local machine
+     copy:
+      content: "{{ key_out.key.private_key }}"
+      dest: /opt/key
+      mode: 0600
+     when: key_out.changed
+
+   - name: create security group for ELB
+     ec2_security_group:
+      description: allow traffic from port 22 and internet
+      state: present
+      region: "{{ region }}"
+      name: ELB
+      rules:
+       proto: tcp
+       from_port: 80
+       to_port: 80
+       cidr_ip: 0.0.0.0/0
+      vpc_id: "{{ vpc_id }}"
+     resgister: elbsg_out
+
+   - name: create security group for ec2
+     ec2_group:
+      description: allow traffic from ELB
+      name: ec2 instances SG
+      region: "{{ region }}"
+      vpc_id: "{{ vpc_id }}"
+      purge_rules: no
+      state: present
+      rules:
+       - proto: tcp
+         from_port: 22
+         to_port: 22
+         group_name: bastion_group
+
+       - proto: tcp
+         from_port: 80
+         to_port: 80
+         group_name: ELB
+
+     register: ec2sg_out
+   
+   - name: update security group with its own sg id
+     ec2_group:
+      name: vprostack-sg
+      region: "{{ region }}"
+      vpc_id: "{{ vpc_id }}"
+      purge_rules: no
+      rules:
+       proto: all
+       group_id: "{{ec2sg_out.group_id}}"
