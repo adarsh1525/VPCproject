@@ -4,18 +4,18 @@
 
   tasks:
    - name: export variable1
-     include_var: /VPCproject/stack-variable
+     include_vars: /VPCproject/stack-variable
    - name: export variable2
-     include_var: /VPCproject/Vpc_project_variables
+     include_vars: /VPCproject/vpc_project_variables
    - name: export VPC out varibles
      include_vars: /VPCproject/vpc_out_varibles
 
    - name: create key pair
      ec2_key:
       name: sample-key2
-      region: "{{ Vpc_project_variables }}"
+      region: "{{ region }}"
       state: present
-     resgister: key_out
+     register: key_out
 
    - name: store key in local machine
      copy:
@@ -25,18 +25,19 @@
      when: key_out.changed
 
    - name: create security group for ELB
-     ec2_security_group:
+     ec2_group:
       description: allow traffic from port 22 and internet
       state: present
       region: "{{ region }}"
       name: ELB
+      purge_rules: no
       rules:
-       proto: tcp
-       from_port: 80
-       to_port: 80
-       cidr_ip: 0.0.0.0/0
+       - proto: tcp
+         from_port: 80
+         to_port: 80
+         cidr_ip: 0.0.0.0/0
       vpc_id: "{{ vpc_id }}"
-     resgister: elbsg_out
+     register: elbsg_out
 
    - name: create security group for ec2
      ec2_group:
@@ -57,14 +58,120 @@
          to_port: 80
          group_name: ELB
 
-     register: ec2sg_out
+     resgister: ec2sg_out
    
    - name: update security group with its own sg id
      ec2_group:
       name: vprostack-sg
+      description: allow all traffic
       region: "{{ region }}"
       vpc_id: "{{ vpc_id }}"
       purge_rules: no
       rules:
-       proto: all
-       group_id: "{{ec2sg_out.group_id}}"
+       - proto: all
+       - group_id: "{{ec2sg_out.group_id}}"
+
+   - name: creating nginx webserver
+     ec2:
+      key_name: sample-key2
+      region: "{{ region }}"
+      state: present
+      image_id: "{{ nginx_ami }}"
+      instance_type: t4g.small
+      name: nginx
+      security_groug: ec2 instances SG
+      vpc_subnet_id: "{{ privsub1id }}"
+      instance_tags:
+       Name: "web01"
+       project: vprofile
+       owner: devops team
+      exact_count: 1
+      count_tag:
+       Name: "web01"
+       project: vprofile
+       owner: devops team
+     register: nginx_out
+
+   - name: creating tomcat appserver
+     ec2:
+      name: tomacat
+      key_name: sample-key2
+      region: "{{ region }}"
+      state: present
+      image_id: "{{ tomcat_ami }}"
+      instance_type: t4g.small
+      security_groug: ec2 instances SG
+      vpc_subnet_id: "{{ privsub1id }}"
+      instance_tags:
+       Name: "app01"
+       project: vprofile
+       owner: devops team
+      exact_count: 1
+      count_tag:
+       Name: "app01"
+       project: vprofile
+       owner: devops team
+     register: tomcat_out
+
+   - name: creating memcache mc01
+     ec2:
+      name: memcache
+      key_name: sample-key2
+      region: "{{ region }}"
+      state: present
+      image_id: "{{ memcached_ami }}"
+      instance_type: t4g.small
+      security_groug: ec2 instances SG
+      vpc_subnet_id: "{{ privsub1id }}"
+      instance_tags:
+       Name: "mc01"
+       project: vprofile
+       owner: devops team
+      exact_count: 1
+      count_tag:
+       Name: "mc01"
+       project: vprofile
+       owner: devops team
+     register: mamcached_out
+
+   - name: creating rabbitmq rm01
+     ec2:
+      name: rabbitmq
+      key_name: sample-key2
+      region: "{{ region }}"
+      state: present
+      image_id: "{{ rabbitmq_ami }}"
+      instance_type: t4g.small
+      security_groug: ec2 instances SG
+      vpc_subnet_id: "{{ privsub1id }}"
+      instance_tags:
+       Name: "rm01"
+       project: vprofile
+       owner: devops team
+      exact_count: 1
+      count_tag:
+       Name: "rm01"
+       project: vprofile
+       owner: devops team
+     register: rabbitmq_out
+
+   - name: creating mysql server db01
+     ec2:
+      name: mysql
+      key_name: sample-key2
+      region: "{{ region }}"
+      state: present
+      image_id: "{{ mysql_ami }}"
+      instance_type: t4g.small
+      security_groug: ec2 instances SG
+      vpc_subnet_id: "{{ privsub1id }}"
+      instance_tags:
+       Name: "db01"
+       project: vprofile
+       owner: devops team
+      exact_count: 1
+      count_tag:
+       Name: "db01"
+       project: vprofile
+       owner: devops team
+     register: mysql_out
