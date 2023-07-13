@@ -74,7 +74,7 @@
      ec2:
       key_name: sample-key2
       region: "{{ region }}"
-      state: present
+      #state: present
       image: "{{ nginx_ami }}"
       instance_type: t4g.small
       #name: nginx
@@ -96,7 +96,7 @@
       #name: tomacat
       key_name: sample-key2
       region: "{{ region }}"
-      state: present
+      #state: present
       image: "{{ tomcat_ami }}"
       instance_type: t4g.small
       group_id: "{{ ec2sg_out.group_id }}"
@@ -117,7 +117,7 @@
       #name: memcache
       key_name: sample-key2
       region: "{{ region }}"
-      state: present
+      #state: present
       image: "{{ memcached_ami }}"
       instance_type: t4g.small
       group_id: "{{ ec2sg_out.group_id }}"
@@ -138,7 +138,7 @@
       #name: rabbitmq
       key_name: sample-key2
       region: "{{ region }}"
-      state: present
+      #state: present
       image: "{{ rabbitmq_ami }}"
       instance_type: t4g.small
       group_id: "{{ ec2sg_out.group_id }}"
