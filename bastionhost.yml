@@ -1,0 +1,69 @@
+- name: create a bastion machine
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+  
+   - name: import vpc variable
+     include_vars: variable
+    
+   - name: create key pair
+     ec2_key:
+      name: sample_key
+      state: present
+      region: "{{region}}"
+     register: key_out
+
+   - name: save key in local machine
+     copy:
+      source: "{{key_out.key.private_key}}"
+      dest: "./bastion_keys"
+      mode: 600
+     when: key_out.changed
+
+   - name: creat security group
+     ec2_group:
+      description: create bastion host to allow only port 22
+      name: bastion_group
+      region: "{{ region }}"
+      
+      rules:
+       - cidr_ip: "{{ MYIP }}"
+         proto: tcp
+         from_port: 22
+         to_port: 22
+      state: present
+      vpc_id: "{{ vpc_id }}"
+     register: bastionsg_out
+
+   - name: create ec2 instance
+     ec2_instance:
+      #state: present
+      region: "{{ region }}"
+      instance_type: t4g.small
+      image: "{{ bastion_ami }}"
+      key_name: sample_key
+      instance_tags:
+       Name: "bastion_host"
+       Project: vprofile
+       Owner: Devops_team
+      exact_count: 1
+      count_tag:
+       Name: "bastion_host"
+       Project: vprofile
+       Owner: Devops_team
+      group_id: "{{ bastionsg_out.group_id }}"
+      vpc_subnet_id: "{{ pubsub1id }}"
+     register: bastionhost_out
+
+      
+
+
+      
+      
+
+
+     
+     
+
+
